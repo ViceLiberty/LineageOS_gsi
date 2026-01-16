@@ -16,7 +16,7 @@ jobs:
           . build/envsetup.sh
           breakfast lineage_arm64_bvNE-bp2a-userdebug
           make systemimage -j$(nproc --all)
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: gsi
           path: out/**/*.img
