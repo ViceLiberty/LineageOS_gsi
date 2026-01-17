@@ -1,0 +1,32 @@
+name: Build LineageOS GSI
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install repo tool
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y repo
+          
+      - name: Sync source
+        run: |
+          mkdir LineageOS
+          cd LineageOS
+          repo init -u https://github.com/LineageOS/android.git -b lineage-23.0 --git-lfs
+          git clone https://github.com/MisterZtr/treble_manifest.git .repo/local_manifests -b lineage-23.0
+          repo sync --force-sync --optimized-fetch --no-tags --no-clone-bundle --prune -j4
+          bash LineageOS_gsi/patches/apply-patches.sh .
+          
+      - name: Build GSI
+        run: |
+          cd LineageOS
+          . build/envsetup.sh
+          breakfast lineage_arm64_bvNE-bp2a-userdebug
+          make systemimage -j$(nproc --all)
+          
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gsi
+          path: LineageOS/out/**/*.img
